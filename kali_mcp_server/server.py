@@ -13,42 +13,42 @@ import mcp.types as types
 from mcp.server.lowlevel import Server
 
 from kali_mcp_server.tools import (
-    fetch_website,
-    list_system_resources,
-    run_command,
-    vulnerability_scan,
-    web_enumeration,
-    network_discovery,
-    exploit_search,
-    save_output,
     create_report,
-    file_analysis,
-    download_file,
-    session_create,
-    session_list,
-    session_switch,
-    session_status,
-    session_delete,
-    session_history,
-    session_results,
-    spider_website,
-    form_analysis,
-    header_analysis,
-    ssl_analysis,
-    subdomain_enum,
-    web_audit,
-    encode_decode,
-    reverse_shell,
-    hash_identify,
     credential_store,
-    hydra_attack,
-    payload_generate,
-    port_scan,
     dns_enum,
+    download_file,
+    encode_decode,
     enum_shares,
+    exploit_search,
+    fetch_website,
+    file_analysis,
+    form_analysis,
+    hash_identify,
+    header_analysis,
+    hydra_attack,
+    list_system_resources,
+    network_discovery,
     parse_nmap,
     parse_tool_output,
+    payload_generate,
+    port_scan,
     recon_auto,
+    reverse_shell,
+    run_command,
+    save_output,
+    session_create,
+    session_delete,
+    session_history,
+    session_list,
+    session_results,
+    session_status,
+    session_switch,
+    spider_website,
+    ssl_analysis,
+    subdomain_enum,
+    vulnerability_scan,
+    web_audit,
+    web_enumeration,
 )
 
 # Create server instance with descriptive name
@@ -61,14 +61,14 @@ async def handle_tool_request(
 ) -> Sequence[Union[types.TextContent, types.ImageContent, types.EmbeddedResource]]:
     """
     Handle MCP tool requests by routing to the appropriate handler.
-    
+
     Args:
         name: The name of the tool being called
         arguments: Dictionary of arguments for the tool
-        
+
     Returns:
         Sequence of content items returned by the tool
-        
+
     Raises:
         ValueError: If the tool name is unknown or required arguments are missing
     """
@@ -76,88 +76,92 @@ async def handle_tool_request(
         if "url" not in arguments:
             raise ValueError("Missing required argument 'url'")
         return await fetch_website(arguments["url"])
-    
+
     elif name == "run":
         if "command" not in arguments:
             raise ValueError("Missing required argument 'command'")
         return await run_command(arguments["command"])
-    
+
     elif name == "resources":
         return await list_system_resources()
-    
+
     elif name == "vulnerability_scan":
         if "target" not in arguments:
             raise ValueError("Missing required argument 'target'")
         scan_type = arguments.get("scan_type", "comprehensive")
         return await vulnerability_scan(arguments["target"], scan_type)
-    
+
     elif name == "web_enumeration":
         if "target" not in arguments:
             raise ValueError("Missing required argument 'target'")
         enum_type = arguments.get("enumeration_type", "full")
         return await web_enumeration(arguments["target"], enum_type)
-    
+
     elif name == "network_discovery":
         if "target" not in arguments:
             raise ValueError("Missing required argument 'target'")
         discovery_type = arguments.get("discovery_type", "comprehensive")
         return await network_discovery(arguments["target"], discovery_type)
-    
+
     elif name == "exploit_search":
         if "search_term" not in arguments:
             raise ValueError("Missing required argument 'search_term'")
         search_type = arguments.get("search_type", "all")
         return await exploit_search(arguments["search_term"], search_type)
-    
+
     elif name == "save_output":
         if "content" not in arguments:
             raise ValueError("Missing required argument 'content'")
         filename = arguments.get("filename")
         category = arguments.get("category", "general")
-        return await save_output(arguments["content"], filename if filename else None, category)
-    
+        return await save_output(
+            arguments["content"], filename if filename else None, category
+        )
+
     elif name == "create_report":
         if "title" not in arguments:
             raise ValueError("Missing required argument 'title'")
         if "findings" not in arguments:
             raise ValueError("Missing required argument 'findings'")
         report_type = arguments.get("report_type", "markdown")
-        return await create_report(arguments["title"], arguments["findings"], report_type)
-    
+        return await create_report(
+            arguments["title"], arguments["findings"], report_type
+        )
+
     elif name == "file_analysis":
         if "filepath" not in arguments:
             raise ValueError("Missing required argument 'filepath'")
         return await file_analysis(arguments["filepath"])
-    
+
     elif name == "download_file":
         if "url" not in arguments:
             raise ValueError("Missing required argument 'url'")
         filename = arguments.get("filename")
         return await download_file(arguments["url"], filename if filename else None)
-    
+
     elif name == "session_create":
         if "session_name" not in arguments:
             raise ValueError("Missing required argument 'session_name'")
         description = arguments.get("description", "")
         target = arguments.get("target", "")
         return await session_create(arguments["session_name"], description, target)
-    
+
     elif name == "session_list":
         return await session_list()
-    
+
     elif name == "session_switch":
         if "session_name" not in arguments:
             raise ValueError("Missing required argument 'session_name'")
         return await session_switch(arguments["session_name"])
-    
+
     elif name == "session_status":
         return await session_status()
-    
+
     elif name == "session_delete":
         if "session_name" not in arguments:
             raise ValueError("Missing required argument 'session_name'")
         return await session_delete(arguments["session_name"])
-    
+
     elif name == "session_history":
         return await session_history()
 
@@ -165,38 +169,38 @@ async def handle_tool_request(
         limit = arguments.get("limit", 3)
         lines = arguments.get("lines", 80)
         return await session_results(limit, lines)
-    
+
     elif name == "spider_website":
         if "url" not in arguments:
             raise ValueError("Missing required argument 'url'")
         depth = arguments.get("depth", 2)
         threads = arguments.get("threads", 10)
         return await spider_website(arguments["url"], depth, threads)
-    
+
     elif name == "form_analysis":
         if "url" not in arguments:
             raise ValueError("Missing required argument 'url'")
         scan_type = arguments.get("scan_type", "comprehensive")
         return await form_analysis(arguments["url"], scan_type)
-    
+
     elif name == "header_analysis":
         if "url" not in arguments:
             raise ValueError("Missing required argument 'url'")
         include_security = arguments.get("include_security", True)
         return await header_analysis(arguments["url"], include_security)
-    
+
     elif name == "ssl_analysis":
         if "url" not in arguments:
             raise ValueError("Missing required argument 'url'")
         port = arguments.get("port", 443)
         return await ssl_analysis(arguments["url"], port)
-    
+
     elif name == "subdomain_enum":
         if "url" not in arguments:
             raise ValueError("Missing required argument 'url'")
         enum_type = arguments.get("enum_type", "comprehensive")
         return await subdomain_enum(arguments["url"], enum_type)
-    
+
     elif name == "web_audit":
         if "url" not in arguments:
             raise ValueError("Missing required argument 'url'")
@@ -311,7 +315,7 @@ async def handle_tool_request(
 async def list_available_tools() -> List[types.Tool]:
     """
     Register and list all available MCP tools.
-    
+
     Returns:
         List of available Tool objects
     """
@@ -367,8 +371,8 @@ async def list_available_tools() -> List[types.Tool]:
                         "type": "string",
                         "description": "Type of scan (quick, comprehensive, web, network)",
                         "enum": ["quick", "comprehensive", "web", "network"],
-                        "default": "comprehensive"
-                    }
+                        "default": "comprehensive",
+                    },
                 },
             },
         ),
@@ -387,8 +391,8 @@ async def list_available_tools() -> List[types.Tool]:
                         "type": "string",
                         "description": "Type of enumeration (basic, full, aggressive)",
                         "enum": ["basic", "full", "aggressive"],
-                        "default": "full"
-                    }
+                        "default": "full",
+                    },
                 },
             },
         ),
@@ -407,8 +411,8 @@ async def list_available_tools() -> List[types.Tool]:
                         "type": "string",
                         "description": "Type of discovery (quick, comprehensive, stealth)",
                         "enum": ["quick", "comprehensive", "stealth"],
-                        "default": "comprehensive"
-                    }
+                        "default": "comprehensive",
+                    },
                 },
             },
         ),
@@ -427,8 +431,8 @@ async def list_available_tools() -> List[types.Tool]:
                         "type": "string",
                         "description": "Type of search (all, web, remote, local, dos)",
                         "enum": ["all", "web", "remote", "local", "dos"],
-                        "default": "all"
-                    }
+                        "default": "all",
+                    },
                 },
             },
         ),
@@ -450,8 +454,8 @@ async def list_available_tools() -> List[types.Tool]:
                     "category": {
                         "type": "string",
                         "description": "Category for organizing files (e.g., 'scan', 'enum', 'evidence')",
-                        "default": "general"
-                    }
+                        "default": "general",
+                    },
                 },
             },
         ),
@@ -474,8 +478,8 @@ async def list_available_tools() -> List[types.Tool]:
                         "type": "string",
                         "description": "Type of report (markdown, text, json)",
                         "enum": ["markdown", "text", "json"],
-                        "default": "markdown"
-                    }
+                        "default": "markdown",
+                    },
                 },
             },
         ),
@@ -507,7 +511,7 @@ async def list_available_tools() -> List[types.Tool]:
                     "filename": {
                         "type": "string",
                         "description": "Optional custom filename",
-                    }
+                    },
                 },
             },
         ),
@@ -529,7 +533,7 @@ async def list_available_tools() -> List[types.Tool]:
                     "target": {
                         "type": "string",
                         "description": "Target for the session",
-                    }
+                    },
                 },
             },
         ),
@@ -618,13 +622,13 @@ async def list_available_tools() -> List[types.Tool]:
                     "depth": {
                         "type": "integer",
                         "description": "Maximum depth of the spider",
-                        "default": 2
+                        "default": 2,
                     },
                     "threads": {
                         "type": "integer",
                         "description": "Number of concurrent threads",
-                        "default": 10
-                    }
+                        "default": 10,
+                    },
                 },
             },
         ),
@@ -643,8 +647,8 @@ async def list_available_tools() -> List[types.Tool]:
                         "type": "string",
                         "description": "Type of scan (comprehensive, quick)",
                         "enum": ["comprehensive", "quick"],
-                        "default": "comprehensive"
-                    }
+                        "default": "comprehensive",
+                    },
                 },
             },
         ),
@@ -662,8 +666,8 @@ async def list_available_tools() -> List[types.Tool]:
                     "include_security": {
                         "type": "boolean",
                         "description": "Include security-related headers",
-                        "default": True
-                    }
+                        "default": True,
+                    },
                 },
             },
         ),
@@ -681,8 +685,8 @@ async def list_available_tools() -> List[types.Tool]:
                     "port": {
                         "type": "integer",
                         "description": "Port to connect to",
-                        "default": 443
-                    }
+                        "default": 443,
+                    },
                 },
             },
         ),
@@ -701,8 +705,8 @@ async def list_available_tools() -> List[types.Tool]:
                         "type": "string",
                         "description": "Type of enumeration (comprehensive, quick)",
                         "enum": ["comprehensive", "quick"],
-                        "default": "comprehensive"
-                    }
+                        "default": "comprehensive",
+                    },
                 },
             },
         ),
@@ -721,8 +725,8 @@ async def list_available_tools() -> List[types.Tool]:
                         "type": "string",
                         "description": "Type of audit (comprehensive, quick)",
                         "enum": ["comprehensive", "quick"],
-                        "default": "comprehensive"
-                    }
+                        "default": "comprehensive",
+                    },
                 },
             },
         ),
@@ -741,14 +745,14 @@ async def list_available_tools() -> List[types.Tool]:
                         "type": "string",
                         "description": "Operation to perform",
                         "enum": ["encode", "decode"],
-                        "default": "encode"
+                        "default": "encode",
                     },
                     "format": {
                         "type": "string",
                         "description": "Encoding format",
                         "enum": ["base64", "url", "hex", "html", "rot13"],
-                        "default": "base64"
-                    }
+                        "default": "base64",
+                    },
                 },
             },
         ),
@@ -766,14 +770,23 @@ async def list_available_tools() -> List[types.Tool]:
                     "shell_type": {
                         "type": "string",
                         "description": "Shell language/type",
-                        "enum": ["bash", "python", "php", "perl", "powershell", "nc", "ruby", "java"],
-                        "default": "bash"
+                        "enum": [
+                            "bash",
+                            "python",
+                            "php",
+                            "perl",
+                            "powershell",
+                            "nc",
+                            "ruby",
+                            "java",
+                        ],
+                        "default": "bash",
                     },
                     "lport": {
                         "type": "integer",
                         "description": "Listener port",
-                        "default": 4444
-                    }
+                        "default": 4444,
+                    },
                 },
             },
         ),
@@ -801,7 +814,7 @@ async def list_available_tools() -> List[types.Tool]:
                         "type": "string",
                         "description": "Action to perform",
                         "enum": ["add", "list", "search"],
-                        "default": "list"
+                        "default": "list",
                     },
                     "username": {
                         "type": "string",
@@ -822,7 +835,7 @@ async def list_available_tools() -> List[types.Tool]:
                     "notes": {
                         "type": "string",
                         "description": "Additional notes",
-                    }
+                    },
                 },
             },
         ),
@@ -840,8 +853,21 @@ async def list_available_tools() -> List[types.Tool]:
                     "service": {
                         "type": "string",
                         "description": "Service to attack",
-                        "enum": ["ssh", "ftp", "http-get", "http-post-form", "smb", "mysql", "rdp", "telnet", "vnc", "pop3", "imap", "smtp"],
-                        "default": "ssh"
+                        "enum": [
+                            "ssh",
+                            "ftp",
+                            "http-get",
+                            "http-post-form",
+                            "smb",
+                            "mysql",
+                            "rdp",
+                            "telnet",
+                            "vnc",
+                            "pop3",
+                            "imap",
+                            "smtp",
+                        ],
+                        "default": "ssh",
                     },
                     "username": {
                         "type": "string",
@@ -862,12 +888,12 @@ async def list_available_tools() -> List[types.Tool]:
                     "threads": {
                         "type": "integer",
                         "description": "Number of threads",
-                        "default": 16
+                        "default": 16,
                     },
                     "extra_opts": {
                         "type": "string",
                         "description": "Additional hydra options",
-                    }
+                    },
                 },
             },
         ),
@@ -895,18 +921,18 @@ async def list_available_tools() -> List[types.Tool]:
                     "lport": {
                         "type": "integer",
                         "description": "Listener port",
-                        "default": 4444
+                        "default": 4444,
                     },
                     "format": {
                         "type": "string",
                         "description": "Output format",
                         "enum": ["elf", "exe", "raw", "python", "php", "war"],
-                        "default": "raw"
+                        "default": "raw",
                     },
                     "encoder": {
                         "type": "string",
                         "description": "Optional encoder (e.g., x86/shikata_ga_nai)",
-                    }
+                    },
                 },
             },
         ),
@@ -924,13 +950,20 @@ async def list_available_tools() -> List[types.Tool]:
                     "scan_type": {
                         "type": "string",
                         "description": "Scan preset",
-                        "enum": ["quick", "full", "stealth", "udp", "service", "aggressive"],
-                        "default": "quick"
+                        "enum": [
+                            "quick",
+                            "full",
+                            "stealth",
+                            "udp",
+                            "service",
+                            "aggressive",
+                        ],
+                        "default": "quick",
                     },
                     "ports": {
                         "type": "string",
                         "description": "Custom port specification (e.g., '80,443,8080' or '1-1024')",
-                    }
+                    },
                 },
             },
         ),
@@ -948,8 +981,8 @@ async def list_available_tools() -> List[types.Tool]:
                     "record_types": {
                         "type": "string",
                         "description": "Record types to query (all, or comma-separated: a,mx,ns,txt,etc.)",
-                        "default": "all"
-                    }
+                        "default": "all",
+                    },
                 },
             },
         ),
@@ -968,7 +1001,7 @@ async def list_available_tools() -> List[types.Tool]:
                         "type": "string",
                         "description": "Enumeration type",
                         "enum": ["smb", "nfs", "all"],
-                        "default": "all"
+                        "default": "all",
                     },
                     "username": {
                         "type": "string",
@@ -977,7 +1010,7 @@ async def list_available_tools() -> List[types.Tool]:
                     "password": {
                         "type": "string",
                         "description": "Optional SMB password",
-                    }
+                    },
                 },
             },
         ),
@@ -1009,9 +1042,16 @@ async def list_available_tools() -> List[types.Tool]:
                     "tool_type": {
                         "type": "string",
                         "description": "Tool that generated the output (auto-detects if not specified)",
-                        "enum": ["auto", "nikto", "gobuster", "dirb", "hydra", "sqlmap"],
-                        "default": "auto"
-                    }
+                        "enum": [
+                            "auto",
+                            "nikto",
+                            "gobuster",
+                            "dirb",
+                            "hydra",
+                            "sqlmap",
+                        ],
+                        "default": "auto",
+                    },
                 },
             },
         ),
@@ -1030,8 +1070,8 @@ async def list_available_tools() -> List[types.Tool]:
                         "type": "string",
                         "description": "Recon depth (quick=DNS+ports+headers, standard=+SSL+exploits, deep=+subdomains+web+vulns)",
                         "enum": ["quick", "standard", "deep"],
-                        "default": "quick"
-                    }
+                        "default": "quick",
+                    },
                 },
             },
         ),
@@ -1044,23 +1084,18 @@ async def list_available_tools() -> List[types.Tool]:
     "--transport",
     type=click.Choice(["stdio", "sse"]),
     default="sse",
-    help="Transport type (stdio for command line, sse for Claude Desktop)"
+    help="Transport type (stdio for command line, sse for Claude Desktop)",
 )
-@click.option(
-    "--debug", 
-    is_flag=True, 
-    default=False, 
-    help="Enable debug mode"
-)
+@click.option("--debug", is_flag=True, default=False, help="Enable debug mode")
 def main(port: int, transport: str, debug: bool) -> int:
     """
     Start the Kali MCP Server with the specified transport.
-    
+
     Args:
         port: Port number to listen on when using SSE transport
         transport: Transport type (stdio or SSE)
         debug: Enable debug mode
-        
+
     Returns:
         Exit code (0 for success)
     """
@@ -1073,11 +1108,11 @@ def main(port: int, transport: str, debug: bool) -> int:
 def start_sse_server(port: int, debug: bool) -> int:
     """
     Start the server with SSE transport for web/Claude Desktop usage.
-    
+
     Args:
         port: Port number to listen on
         debug: Enable debug mode
-        
+
     Returns:
         Exit code (0 for success)
     """
@@ -1117,10 +1152,10 @@ def start_sse_server(port: int, debug: bool) -> int:
 def start_stdio_server(debug: bool) -> int:
     """
     Start the server with stdio transport for command-line usage.
-    
+
     Args:
         debug: Enable debug mode
-        
+
     Returns:
         Exit code (0 for success)
     """

@@ -175,3 +175,23 @@ cython_debug/
 
 CLAUDE.md
 .DS_Store
+
+# Test artifacts / tool output files
+*.txt_e4l
+dns_enum_*.txt
+enum_shares_*.txt
+exploit_search_*.txt
+file_analysis_*.txt
+header_analysis_*.txt
+hydra_*.txt
+network_discovery_*.txt
+recon_*.txt
+report_*.markdown
+ssl_analysis_*.txt
+subdomain_enum_*.txt
+vuln_scan_*.txt
+web_audit_*.txt
+web_enum_*.txt
+test_file.txt
+test_category_*.txt
+sessions/

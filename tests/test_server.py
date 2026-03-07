@@ -30,15 +30,16 @@ async def test_handle_tool_request_missing_arguments():
 @pytest.mark.asyncio
 async def test_handle_fetch_tool():
     """Test handling of fetch tool calls."""
+
     # Create a mock function directly
     async def mock_fetch(url):
         return [types.TextContent(type="text", text="Test content")]
-    
+
     # Create a patch context
     with patch("kali_mcp_server.server.fetch_website", mock_fetch):
         # Call function
         result = await handle_tool_request("fetch", {"url": "https://example.com"})
-        
+
         # Verify results
         assert len(result) == 1
         assert result[0].type == "text"
@@ -48,15 +49,16 @@ async def test_handle_fetch_tool():
 @pytest.mark.asyncio
 async def test_handle_run_tool():
     """Test handling of run tool calls."""
+
     # Create a mock function directly
     async def mock_run(command):
         return [types.TextContent(type="text", text="Command output")]
-    
+
     # Create a patch context
     with patch("kali_mcp_server.server.run_command", mock_run):
         # Call function
         result = await handle_tool_request("run", {"command": "uname -a"})
-        
+
         # Verify results
         assert len(result) == 1
         assert result[0].type == "text"
@@ -66,10 +68,11 @@ async def test_handle_run_tool():
 @pytest.mark.asyncio
 async def test_handle_resources_tool():
     """Test handling of resources tool calls."""
+
     # Create a mock function directly
     async def mock_resources():
         return [types.TextContent(type="text", text="Resources info")]
-    
+
     # Create a patch context
     with patch("kali_mcp_server.server.list_system_resources", mock_resources):
         # Call function
@@ -87,11 +90,15 @@ async def test_handle_resources_tool():
 @pytest.mark.asyncio
 async def test_handle_encode_decode():
     """Test dispatch for encode_decode tool."""
+
     async def mock_fn(data, operation, fmt):
         return [types.TextContent(type="text", text=f"encoded {data}")]
 
     with patch("kali_mcp_server.server.encode_decode", mock_fn):
-        result = await handle_tool_request("encode_decode", {"data": "hello", "operation": "encode", "format": "base64"})
+        result = await handle_tool_request(
+            "encode_decode",
+            {"data": "hello", "operation": "encode", "format": "base64"},
+        )
         assert result[0].text == "encoded hello"
 
 
@@ -105,6 +112,7 @@ async def test_handle_encode_decode_missing_arg():
 @pytest.mark.asyncio
 async def test_handle_reverse_shell():
     """Test dispatch for reverse_shell tool."""
+
     async def mock_fn(lhost, shell_type, lport):
         return [types.TextContent(type="text", text=f"shell {lhost}:{lport}")]
 
@@ -123,6 +131,7 @@ async def test_handle_reverse_shell_missing_arg():
 @pytest.mark.asyncio
 async def test_handle_hash_identify():
     """Test dispatch for hash_identify tool."""
+
     async def mock_fn(hash_value):
         return [types.TextContent(type="text", text=f"identified {hash_value}")]
 
@@ -141,6 +150,7 @@ async def test_handle_hash_identify_missing_arg():
 @pytest.mark.asyncio
 async def test_handle_credential_store():
     """Test dispatch for credential_store tool."""
+
     async def mock_fn(**kwargs):
         return [types.TextContent(type="text", text=f"creds {kwargs.get('action')}")]
 
@@ -152,11 +162,15 @@ async def test_handle_credential_store():
 @pytest.mark.asyncio
 async def test_handle_hydra_attack():
     """Test dispatch for hydra_attack tool."""
+
     async def mock_fn(**kwargs):
         return [types.TextContent(type="text", text=f"hydra {kwargs.get('target')}")]
 
     with patch("kali_mcp_server.server.hydra_attack", mock_fn):
-        result = await handle_tool_request("hydra_attack", {"target": "10.0.0.1", "username": "admin", "password": "pass"})
+        result = await handle_tool_request(
+            "hydra_attack",
+            {"target": "10.0.0.1", "username": "admin", "password": "pass"},
+        )
         assert "10.0.0.1" in result[0].text
 
 
@@ -170,15 +184,15 @@ async def test_handle_hydra_attack_missing_arg():
 @pytest.mark.asyncio
 async def test_handle_payload_generate():
     """Test dispatch for payload_generate tool."""
+
     async def mock_fn(**kwargs):
         return [types.TextContent(type="text", text=f"payload {kwargs.get('lhost')}")]
 
     with patch("kali_mcp_server.server.payload_generate", mock_fn):
-        result = await handle_tool_request("payload_generate", {
-            "payload_type": "reverse_shell",
-            "platform": "linux",
-            "lhost": "10.0.0.1"
-        })
+        result = await handle_tool_request(
+            "payload_generate",
+            {"payload_type": "reverse_shell", "platform": "linux", "lhost": "10.0.0.1"},
+        )
         assert "10.0.0.1" in result[0].text
 
 
@@ -190,12 +204,15 @@ async def test_handle_payload_generate_missing_args():
     with pytest.raises(ValueError, match="Missing required argument 'platform'"):
         await handle_tool_request("payload_generate", {"payload_type": "reverse_shell"})
     with pytest.raises(ValueError, match="Missing required argument 'lhost'"):
-        await handle_tool_request("payload_generate", {"payload_type": "reverse_shell", "platform": "linux"})
+        await handle_tool_request(
+            "payload_generate", {"payload_type": "reverse_shell", "platform": "linux"}
+        )
 
 
 @pytest.mark.asyncio
 async def test_handle_port_scan():
     """Test dispatch for port_scan tool."""
+
     async def mock_fn(target, scan_type, ports):
         return [types.TextContent(type="text", text=f"scan {target}")]
 
@@ -214,6 +231,7 @@ async def test_handle_port_scan_missing_arg():
 @pytest.mark.asyncio
 async def test_handle_dns_enum():
     """Test dispatch for dns_enum tool."""
+
     async def mock_fn(domain, record_types):
         return [types.TextContent(type="text", text=f"dns {domain}")]
 
@@ -232,6 +250,7 @@ async def test_handle_dns_enum_missing_arg():
 @pytest.mark.asyncio
 async def test_handle_enum_shares():
     """Test dispatch for enum_shares tool."""
+
     async def mock_fn(**kwargs):
         return [types.TextContent(type="text", text=f"shares {kwargs.get('target')}")]
 
@@ -250,6 +269,7 @@ async def test_handle_enum_shares_missing_arg():
 @pytest.mark.asyncio
 async def test_handle_parse_nmap():
     """Test dispatch for parse_nmap tool."""
+
     async def mock_fn(filepath):
         return [types.TextContent(type="text", text=f"parsed {filepath}")]
 
@@ -268,11 +288,16 @@ async def test_handle_parse_nmap_missing_arg():
 @pytest.mark.asyncio
 async def test_handle_parse_tool_output():
     """Test dispatch for parse_tool_output tool."""
+
     async def mock_fn(filepath, tool_type):
-        return [types.TextContent(type="text", text=f"parsed {filepath} as {tool_type}")]
+        return [
+            types.TextContent(type="text", text=f"parsed {filepath} as {tool_type}")
+        ]
 
     with patch("kali_mcp_server.server.parse_tool_output", mock_fn):
-        result = await handle_tool_request("parse_tool_output", {"filepath": "/tmp/nikto.txt"})
+        result = await handle_tool_request(
+            "parse_tool_output", {"filepath": "/tmp/nikto.txt"}
+        )
         assert "/tmp/nikto.txt" in result[0].text
 
 
@@ -286,6 +311,7 @@ async def test_handle_parse_tool_output_missing_arg():
 @pytest.mark.asyncio
 async def test_handle_recon_auto():
     """Test dispatch for recon_auto tool."""
+
     async def mock_fn(target, depth):
         return [types.TextContent(type="text", text=f"recon {target} {depth}")]
 

@@ -2,10 +2,10 @@
 Tests for the tools module functionality.
 """
 
-
-import pytest
 from unittest.mock import patch
+
 import mcp.types as types
+import pytest
 
 from kali_mcp_server.tools import fetch_website, is_command_allowed
 
@@ -73,11 +73,11 @@ async def test_fetch_website_mock():
     # since it's hard to properly mock an async context manager
     url = "https://example.com"
     assert url.startswith(("http://", "https://"))  # Tests the validation logic
-    
+
     # This is equivalent to the actual test but without the mock complexity
     class MockResponse:
         text = "<html><body>Test content</body></html>"
-        
+
     # Create a simple test directly
     result = [types.TextContent(type="text", text=MockResponse.text)]
     assert len(result) == 1
@@ -89,7 +89,7 @@ async def test_fetch_website_mock():
 async def test_vulnerability_scan():
     """Test vulnerability scan functionality."""
     from kali_mcp_server.tools import vulnerability_scan
-    
+
     result = await vulnerability_scan("127.0.0.1", "quick")
     assert len(result) == 1
     assert "Starting quick vulnerability scan" in result[0].text
@@ -100,7 +100,7 @@ async def test_vulnerability_scan():
 async def test_web_enumeration():
     """Test web enumeration functionality."""
     from kali_mcp_server.tools import web_enumeration
-    
+
     result = await web_enumeration("http://example.com", "basic")
     assert len(result) == 1
     assert "Starting basic web enumeration" in result[0].text
@@ -111,7 +111,7 @@ async def test_web_enumeration():
 async def test_network_discovery():
     """Test network discovery functionality."""
     from kali_mcp_server.tools import network_discovery
-    
+
     result = await network_discovery("192.168.1.0/24", "quick")
     assert len(result) == 1
     assert "Starting quick network discovery" in result[0].text
@@ -122,7 +122,7 @@ async def test_network_discovery():
 async def test_exploit_search():
     """Test exploit search functionality."""
     from kali_mcp_server.tools import exploit_search
-    
+
     result = await exploit_search("apache", "web")
     assert len(result) == 1
     assert "Exploit search results for 'apache'" in result[0].text
@@ -132,7 +132,7 @@ async def test_exploit_search():
 async def test_save_output():
     """Test save output functionality."""
     from kali_mcp_server.tools import save_output
-    
+
     test_content = "This is test content for saving"
     result = await save_output(test_content, "test_file", "test_category")
     assert len(result) == 1
@@ -144,7 +144,7 @@ async def test_save_output():
 async def test_create_report():
     """Test create report functionality."""
     from kali_mcp_server.tools import create_report
-    
+
     result = await create_report("Test Report", "Test findings", "markdown")
     assert len(result) == 1
     assert "Report generated successfully" in result[0].text
@@ -155,11 +155,11 @@ async def test_create_report():
 async def test_file_analysis():
     """Test file analysis functionality."""
     from kali_mcp_server.tools import file_analysis
-    
+
     # Create a test file first
     with open("test_file.txt", "w") as f:
         f.write("This is a test file for analysis")
-    
+
     result = await file_analysis("test_file.txt")
     assert len(result) == 1
     assert "File analysis completed" in result[0].text
@@ -170,19 +170,28 @@ async def test_file_analysis():
 async def test_download_file():
     """Test download file functionality."""
     from kali_mcp_server.tools import download_file
-    
+
     # Test with a simple URL that should work
     result = await download_file("https://httpbin.org/robots.txt")
     assert len(result) == 1
-    # Should either succeed or fail gracefully
-    assert any(status in result[0].text for status in ["downloaded successfully", "Error", "HTTP error"])
+    # Should either succeed or fail gracefully (network may be unavailable in CI)
+    assert any(
+        status in result[0].text
+        for status in [
+            "downloaded successfully",
+            "Error",
+            "HTTP error",
+            "Request error",
+            "timed out",
+        ]
+    )
 
 
 @pytest.mark.asyncio
 async def test_session_create():
     """Test session creation functionality."""
     from kali_mcp_server.tools import session_create
-    
+
     result = await session_create("test_session", "Test description", "test_target")
     assert len(result) == 1
     assert "Session 'test_session' created and set as active" in result[0].text
@@ -192,21 +201,22 @@ async def test_session_create():
 async def test_session_list():
     """Test session listing functionality."""
     from kali_mcp_server.tools import session_list
-    
+
     result = await session_list()
     assert len(result) == 1
-    assert "Available Sessions" in result[0].text or "No sessions found" in result[0].text
+    assert (
+        "Available Sessions" in result[0].text or "No sessions found" in result[0].text
+    )
 
 
 @pytest.mark.asyncio
 async def test_session_switch():
     """Test session switching functionality."""
-    from kali_mcp_server.tools import session_switch
-    
     # First create a session to switch to
-    from kali_mcp_server.tools import session_create
+    from kali_mcp_server.tools import session_create, session_switch
+
     await session_create("switch_test_session", "Switch test", "switch_target")
-    
+
     result = await session_switch("switch_test_session")
     assert len(result) == 1
     assert "Switched to session 'switch_test_session'" in result[0].text
@@ -216,18 +226,20 @@ async def test_session_switch():
 async def test_session_status():
     """Test session status functionality."""
     from kali_mcp_server.tools import session_status
-    
+
     result = await session_status()
     assert len(result) == 1
     # Should show either active session or no active session message
-    assert any(status in result[0].text for status in ["Active Session", "No active session"])
+    assert any(
+        status in result[0].text for status in ["Active Session", "No active session"]
+    )
 
 
 @pytest.mark.asyncio
 async def test_session_history():
     """Test session history functionality."""
     from kali_mcp_server.tools import session_history
-    
+
     result = await session_history()
     assert len(result) == 1
     # Should show either history, no history, or no active session message
@@ -240,18 +252,19 @@ async def test_session_history():
 @pytest.mark.asyncio
 async def test_session_delete():
     """Test session deletion functionality."""
-    from kali_mcp_server.tools import session_delete, session_create
-    
+    from kali_mcp_server.tools import session_create, session_delete
+
     # Create another session to switch to (can't delete active session)
     await session_create("keep_session", "Keep test", "keep_target")
 
     # First create a session to delete
     await session_create("delete_test_session", "Delete test", "delete_target")
-    
+
     # Switch to another session first (can't delete active session)
     from kali_mcp_server.tools import session_switch
+
     await session_switch("keep_session")
-    
+
     result = await session_delete("delete_test_session")
     assert len(result) == 1
     assert "Session 'delete_test_session' deleted successfully" in result[0].text
@@ -261,7 +274,7 @@ async def test_session_delete():
 async def test_spider_website():
     """Test website spidering functionality."""
     from kali_mcp_server.tools import spider_website
-    
+
     result = await spider_website("example.com", depth=1, threads=5)
     assert len(result) == 1
     assert "Website spidering completed" in result[0].text
@@ -271,7 +284,7 @@ async def test_spider_website():
 async def test_form_analysis():
     """Test form analysis functionality."""
     from kali_mcp_server.tools import form_analysis
-    
+
     result = await form_analysis("example.com", scan_type="basic")
     assert len(result) == 1
     assert "Form analysis completed" in result[0].text
@@ -281,7 +294,7 @@ async def test_form_analysis():
 async def test_header_analysis():
     """Test header analysis functionality."""
     from kali_mcp_server.tools import header_analysis
-    
+
     result = await header_analysis("example.com", include_security=True)
     assert len(result) == 1
     assert "Header analysis completed" in result[0].text
@@ -291,7 +304,7 @@ async def test_header_analysis():
 async def test_ssl_analysis():
     """Test SSL analysis functionality."""
     from kali_mcp_server.tools import ssl_analysis
-    
+
     result = await ssl_analysis("example.com", port=443)
     assert len(result) == 1
     assert "SSL analysis completed" in result[0].text
@@ -301,7 +314,7 @@ async def test_ssl_analysis():
 async def test_subdomain_enum():
     """Test subdomain enumeration functionality."""
     from kali_mcp_server.tools import subdomain_enum
-    
+
     result = await subdomain_enum("example.com", enum_type="basic")
     assert len(result) == 1
     assert "Subdomain enumeration completed" in result[0].text
@@ -413,7 +426,9 @@ async def test_hash_identify_sha256():
     """Test SHA-256 hash identification."""
     from kali_mcp_server.tools import hash_identify
 
-    result = await hash_identify("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+    result = await hash_identify(
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    )
     assert len(result) == 1
     assert "SHA-256" in result[0].text
 
@@ -432,6 +447,7 @@ async def test_hash_identify_unknown():
 async def test_credential_store_add_and_list():
     """Test credential store add and list roundtrip."""
     import os
+
     from kali_mcp_server.tools import credential_store
 
     with patch("kali_mcp_server.tools.load_active_session", return_value=None):
@@ -439,7 +455,13 @@ async def test_credential_store_add_and_list():
         if os.path.exists("credentials.json"):
             os.remove("credentials.json")
 
-        result = await credential_store(action="add", username="admin", password="pass123", service="ssh", target="10.0.0.1")
+        result = await credential_store(
+            action="add",
+            username="admin",
+            password="pass123",
+            service="ssh",
+            target="10.0.0.1",
+        )
         assert len(result) == 1
         assert "Credential added successfully" in result[0].text
         assert "admin" in result[0].text
@@ -574,8 +596,9 @@ async def test_enum_shares():
 @pytest.mark.asyncio
 async def test_parse_nmap_text():
     """Test nmap text output parsing."""
-    import tempfile
     import os
+    import tempfile
+
     from kali_mcp_server.tools import parse_nmap
 
     nmap_output = """Starting Nmap 7.94 ( https://nmap.org )
@@ -611,8 +634,9 @@ Nmap done: 1 IP address (1 host up) scanned in 5.00 seconds
 @pytest.mark.asyncio
 async def test_parse_nmap_xml():
     """Test nmap XML output parsing."""
-    import tempfile
     import os
+    import tempfile
+
     from kali_mcp_server.tools import parse_nmap
 
     nmap_xml = """<?xml version="1.0"?>
@@ -662,8 +686,9 @@ async def test_parse_nmap_file_not_found():
 @pytest.mark.asyncio
 async def test_parse_tool_output_nikto():
     """Test nikto output parsing."""
-    import tempfile
     import os
+    import tempfile
+
     from kali_mcp_server.tools import parse_tool_output
 
     nikto_output = """- nikto v2.5.0
@@ -695,8 +720,9 @@ async def test_parse_tool_output_nikto():
 @pytest.mark.asyncio
 async def test_parse_tool_output_auto_detect_failure():
     """Test auto-detection failure with unknown content."""
-    import tempfile
     import os
+    import tempfile
+
     from kali_mcp_server.tools import parse_tool_output
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
@@ -727,11 +753,17 @@ async def test_recon_auto():
 def test_new_allowed_commands():
     """Test that new commands are in the ALLOWED_COMMANDS list."""
     assert is_command_allowed("hydra -l admin -p pass 10.0.0.1 ssh")[0] is True
-    assert is_command_allowed("hydra -l admin -p pass 10.0.0.1 ssh")[1] is True  # Long-running
+    assert (
+        is_command_allowed("hydra -l admin -p pass 10.0.0.1 ssh")[1] is True
+    )  # Long-running
     assert is_command_allowed("msfvenom -p linux/x86/shell_reverse_tcp")[0] is True
-    assert is_command_allowed("msfvenom -p linux/x86/shell_reverse_tcp")[1] is True  # Long-running
+    assert (
+        is_command_allowed("msfvenom -p linux/x86/shell_reverse_tcp")[1] is True
+    )  # Long-running
     assert is_command_allowed("smbclient -L 10.0.0.1 -N")[0] is True
-    assert is_command_allowed("smbclient -L 10.0.0.1 -N")[1] is False  # Not long-running
+    assert (
+        is_command_allowed("smbclient -L 10.0.0.1 -N")[1] is False
+    )  # Not long-running
     assert is_command_allowed("enum4linux -a 10.0.0.1")[0] is True
     assert is_command_allowed("enum4linux -a 10.0.0.1")[1] is True  # Long-running
     assert is_command_allowed("showmount -e 10.0.0.1")[0] is True
