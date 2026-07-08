@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/k3nn3dy-ai-kali-mcp-badge.png)](https://mseep.ai/app/k3nn3dy-ai-kali-mcp)
+
 # Kali MCP Server
 
 A production-ready MCP (Model Context Protocol) server running in a Kali Linux Docker container, providing AI assistants with access to 35 security tools covering the full offensive security lifecycle.
